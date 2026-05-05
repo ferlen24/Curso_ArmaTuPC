@@ -50,6 +50,7 @@
       border-radius: 8px;
       font-size: 16px;
       min-width: 250px;
+      max-width: 100%;
     }
 
     button {
@@ -101,6 +102,11 @@
       cursor: grab;
       user-select: none;
       transition: transform 0.2s, border 0.2s;
+    }
+
+    .componente.seleccionado {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
     }
 
     .componente:hover {
@@ -304,6 +310,7 @@
       align-items: flex-end;
       gap: 12px;
       width: fit-content;
+      max-width: 100%;
     }
 
     .pc-monitor {
@@ -391,6 +398,69 @@
     @media (max-width: 850px) {
       .juego {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 16px 12px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+        line-height: 1.25;
+      }
+
+      .container {
+        margin: 12px auto;
+        padding: 10px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .inicio {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .inicio input,
+      .inicio button {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .componentes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .icono {
+        font-size: 32px;
+      }
+
+      .zona-pc {
+        min-height: auto;
+        padding: 14px;
+      }
+
+      .gabinete {
+        padding: 12px;
+      }
+
+      .subzona h3 {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .monitor {
+        font-size: 13px;
+        padding: 12px;
+      }
+
+      .pc-anim {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
@@ -548,6 +618,7 @@
     let intervalo = null;
     let intentos = 0;
     let errores = 0;
+    let componenteSeleccionado = null;
 
     const piezasColocadas = {};
 
@@ -569,6 +640,23 @@
         event.dataTransfer.setData("nombre", componente.dataset.nombre);
         event.dataTransfer.setData("seccion", componente.dataset.seccion);
       });
+
+      componente.addEventListener("click", () => {
+        if (componente.classList.contains("colocado")) return;
+
+        if (componenteSeleccionado === componente) {
+          componente.classList.remove("seleccionado");
+          componenteSeleccionado = null;
+          return;
+        }
+
+        if (componenteSeleccionado) {
+          componenteSeleccionado.classList.remove("seleccionado");
+        }
+
+        componenteSeleccionado = componente;
+        componenteSeleccionado.classList.add("seleccionado");
+      });
     });
 
     zonasClasificacion.forEach(zona => {
@@ -582,48 +670,66 @@
         const tipo = event.dataTransfer.getData("tipo");
         const nombre = event.dataTransfer.getData("nombre");
         const seccionOrigen = event.dataTransfer.getData("seccion");
-        const seccionDestino = zona.dataset.seccion;
-        const claveRegistro = seccionDestino === "proteccion" ? "proteccion" : tipo;
-        const subzona = zona.closest(".subzona");
+        procesarColocacion(zona, tipo, nombre, seccionOrigen);
+      });
 
-        if (subzona && subzona.classList.contains("bloqueada")) {
-          errores++;
-          document.getElementById("errores").textContent = errores;
-          mostrarResultado("error", "Esa sección está bloqueada. Completá primero la etapa anterior.");
-          return;
-        }
-
-        if (piezasColocadas[claveRegistro] || piezasColocadas[tipo]) {
-          mostrarResultado("error", "Ese componente ya fue clasificado.");
-          return;
-        }
-
-        if (seccionOrigen === seccionDestino) {
-          piezasColocadas[claveRegistro] = nombre;
-          zona.classList.remove("incorrecto");
-          zona.classList.add("correcto");
-
-          const badge = document.createElement("div");
-          badge.className = "pieza-colocada";
-          badge.textContent = nombre;
-          zona.appendChild(badge);
-
-          const componenteOriginal = document.querySelector(`.componente[data-tipo="${tipo}"]`);
-          if (componenteOriginal) {
-            componenteOriginal.classList.add("colocado");
-            componenteOriginal.draggable = false;
-          }
-
-          actualizarEstadoSecciones();
-        } else {
-          errores++;
-          document.getElementById("errores").textContent = errores;
-          zona.classList.remove("correcto");
-          zona.classList.add("incorrecto");
-          mostrarResultado("error", "Ese componente pertenece a otra sección.");
-        }
+      zona.addEventListener("click", () => {
+        if (!componenteSeleccionado) return;
+        procesarColocacion(
+          zona,
+          componenteSeleccionado.dataset.tipo,
+          componenteSeleccionado.dataset.nombre,
+          componenteSeleccionado.dataset.seccion
+        );
       });
     });
+
+    function procesarColocacion(zona, tipo, nombre, seccionOrigen) {
+      const seccionDestino = zona.dataset.seccion;
+      const claveRegistro = seccionDestino === "proteccion" ? "proteccion" : tipo;
+      const subzona = zona.closest(".subzona");
+
+      if (subzona && subzona.classList.contains("bloqueada")) {
+        errores++;
+        document.getElementById("errores").textContent = errores;
+        mostrarResultado("error", "Esa sección está bloqueada. Completá primero la etapa anterior.");
+        return;
+      }
+
+      if (piezasColocadas[claveRegistro] || piezasColocadas[tipo]) {
+        mostrarResultado("error", "Ese componente ya fue clasificado.");
+        return;
+      }
+
+      if (seccionOrigen === seccionDestino) {
+        piezasColocadas[claveRegistro] = nombre;
+        zona.classList.remove("incorrecto");
+        zona.classList.add("correcto");
+
+        const badge = document.createElement("div");
+        badge.className = "pieza-colocada";
+        badge.textContent = nombre;
+        zona.appendChild(badge);
+
+        const componenteOriginal = document.querySelector(`.componente[data-tipo="${tipo}"]`);
+        if (componenteOriginal) {
+          componenteOriginal.classList.add("colocado");
+          componenteOriginal.classList.remove("seleccionado");
+          componenteOriginal.draggable = false;
+        }
+        if (componenteSeleccionado === componenteOriginal) {
+          componenteSeleccionado = null;
+        }
+
+        actualizarEstadoSecciones();
+      } else {
+        errores++;
+        document.getElementById("errores").textContent = errores;
+        zona.classList.remove("correcto");
+        zona.classList.add("incorrecto");
+        mostrarResultado("error", "Ese componente pertenece a otra sección.");
+      }
+    }
 
     function iniciarJuego() {
       const inputNombre = document.getElementById("nombreJugador");
