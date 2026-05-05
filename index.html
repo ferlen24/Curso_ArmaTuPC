@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Juego: Armá tu PC - GESTION DE T.I.C. SPT</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #eef2f7;
+      color: #1f2937;
+    }
+
+    header {
+      background: #1e3a8a;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 15px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      margin-bottom: 20px;
+    }
+
+    .inicio {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input {
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+      min-width: 250px;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+      background: #2563eb;
+      color: white;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .info-juego {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-weight: bold;
+    }
+
+    .juego {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .componentes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .componente {
+      border: 2px solid #cbd5e1;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.2s, border 0.2s;
+    }
+
+    .componente:hover {
+      transform: scale(1.03);
+      border-color: #2563eb;
+    }
+
+    .icono {
+      font-size: 38px;
+      margin-bottom: 6px;
+    }
+
+    .zona-pc {
+      border: 3px dashed #64748b;
+      border-radius: 16px;
+      padding: 20px;
+      min-height: 520px;
+      background: #f1f5f9;
+    }
+
+    .gabinete {
+      background: #111827;
+      border-radius: 16px;
+      padding: 18px;
+      color: white;
+      min-height: 280px;
+      position: relative;
+    }
+
+    .subzona {
+      margin-bottom: 14px;
+    }
+
+    .subzona h3 {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .estado-seccion {
+      font-size: 12px;
+      color: #93c5fd;
+      background: rgba(30, 58, 138, 0.45);
+      border: 1px solid rgba(147, 197, 253, 0.55);
+      border-radius: 999px;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+
+    .subzona.perifericos {
+      background: #0f172a;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .subzona.proteccion {
+      background: #1f2937;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .subzona.bloqueada {
+      opacity: 0.45;
+    }
+
+    .subzona.bloqueada .zona-clasificacion {
+      cursor: not-allowed;
+    }
+
+    .zona-clasificacion {
+      background: #374151;
+      border: 2px dashed #9ca3af;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      min-height: 90px;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 10px;
+    }
+
+    .zona-clasificacion.correcto {
+      border-color: #22c55e;
+      background: #14532d;
+    }
+
+    .zona-clasificacion.incorrecto {
+      border-color: #ef4444;
+      background: #7f1d1d;
+    }
+
+    .pieza-colocada {
+      background: white;
+      color: #111827;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .componente.colocado {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+      border-color: #94a3b8;
+    }
+
+    .acciones {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .encender {
+      background: #16a34a;
+    }
+
+    .encender:hover {
+      background: #15803d;
+    }
+
+    .reiniciar {
+      background: #dc2626;
+    }
+
+    .reiniciar:hover {
+      background: #b91c1c;
+    }
+
+    .resultado {
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
+      font-weight: bold;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .resultado.ok {
+      display: block;
+      background: #dcfce7;
+      color: #14532d;
+      border: 2px solid #22c55e;
+    }
+
+    .resultado.error {
+      display: block;
+      background: #fee2e2;
+      color: #7f1d1d;
+      border: 2px solid #ef4444;
+    }
+
+    .monitor {
+      background: #020617;
+      color: #22c55e;
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 120px;
+      margin-top: 15px;
+      font-family: Consolas, monospace;
+      white-space: pre-line;
+    }
+
+    .monitor.encendiendo {
+      animation: parpadeoMonitor 0.28s ease-in-out infinite alternate;
+    }
+
+    .monitor.ok {
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.55);
+    }
+
+    .monitor.error {
+      color: #fca5a5;
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.45);
+    }
+
+    .asistente-etapas {
+      margin-top: 15px;
+      background: #eff6ff;
+      border: 2px solid #93c5fd;
+      color: #1e3a8a;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: bold;
+    }
+
+    .pc-anim {
+      margin-top: 14px;
+      background: #0f172a;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      width: fit-content;
+    }
+
+    .pc-monitor {
+      width: 130px;
+      height: 90px;
+      background: #020617;
+      border: 3px solid #334155;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pc-screen {
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      background: linear-gradient(135deg, #22c55e, #16a34a, #4ade80);
+      background-size: 200% 200%;
+      transition: opacity 0.35s ease;
+    }
+
+    .pc-base {
+      width: 46px;
+      height: 8px;
+      background: #475569;
+      border-radius: 8px;
+      margin: 4px auto 0;
+    }
+
+    .pc-cpu {
+      width: 54px;
+      height: 90px;
+      border-radius: 8px;
+      background: #111827;
+      border: 2px solid #334155;
+      position: relative;
+    }
+
+    .pc-led {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #7f1d1d;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      box-shadow: 0 0 0 transparent;
+      transition: all 0.3s ease;
+    }
+
+    .pc-anim.encendida .pc-screen {
+      opacity: 1;
+      animation: pantallaActiva 1.2s linear infinite;
+    }
+
+    .pc-anim.encendida .pc-led {
+      background: #22c55e;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.75);
+    }
+
+    .pc-anim.apagada .pc-screen {
+      opacity: 0.08;
+      background: #1e293b;
+    }
+
+    .pc-anim.apagada .pc-led {
+      background: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.55);
+    }
+
+    @keyframes parpadeoMonitor {
+      from { opacity: 0.75; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pantallaActiva {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    .ayuda ul {
+      margin-top: 8px;
+    }
+
+    @media (max-width: 850px) {
+      .juego {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🖥️ Juego: Armá tu PC</h1>
+    <p>Arrastrá los componentes correctos al gabinete y luego encendé la computadora.</p>
+  </header>
+
+  <main class="container">
+    <section class="panel inicio" id="pantallaInicio">
+      <label for="nombreJugador"><strong>Nombre del alumno:</strong></label>
+      <input type="text" id="nombreJugador" placeholder="Ejemplo: Juan Pérez" />
+      <button onclick="iniciarJuego()">Iniciar juego</button>
+    </section>
+
+    <section class="panel info-juego" id="infoJuego" style="display:none;">
+      <div>Jugador: <span id="jugadorActual">-</span></div>
+      <div>Tiempo: <span id="tiempo">00:00</span></div>
+      <div>Intentos de encendido: <span id="intentos">0</span></div>
+      <div>Errores de armado: <span id="errores">0</span></div>
+    </section>
+
+    <section class="juego" id="zonaJuego" style="display:none;">
+      <div class="panel">
+        <h2>Componentes disponibles</h2>
+        <p>Arrastrá cada pieza al lugar correcto.</p>
+
+        <div class="componentes">
+          <div class="componente" draggable="true" data-tipo="cpu" data-seccion="gabinete" data-nombre="CPU Ryzen 5">
+            <div class="icono">🧠</div>
+            <strong>CPU</strong><br />Ryzen 5
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="ram" data-seccion="gabinete" data-nombre="Memoria RAM 16 GB">
+            <div class="icono">🟩</div>
+            <strong>RAM</strong><br />16 GB
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="disco" data-seccion="gabinete" data-nombre="Disco SSD 512 GB">
+            <div class="icono">💽</div>
+            <strong>Disco</strong><br />SSD 512 GB
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="fuente" data-seccion="gabinete" data-nombre="Fuente ATX 600W">
+            <div class="icono">🔌</div>
+            <strong>Fuente</strong><br />ATX 600W
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="mother" data-seccion="gabinete" data-nombre="Placa madre AM4">
+            <div class="icono">🟦</div>
+            <strong>Motherboard</strong><br />AM4
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="monitor" data-seccion="perifericos" data-nombre="Monitor HDMI">
+            <div class="icono">🖥️</div>
+            <strong>Monitor</strong><br />HDMI
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="teclado" data-seccion="perifericos" data-nombre="Teclado USB">
+            <div class="icono">⌨️</div>
+            <strong>Teclado</strong><br />USB
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="mouse" data-seccion="perifericos" data-nombre="Mouse USB">
+            <div class="icono">🖱️</div>
+            <strong>Mouse</strong><br />USB
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="ups" data-seccion="proteccion" data-nombre="UPS 1200VA">
+            <div class="icono">🔋</div>
+            <strong>UPS</strong><br />1200VA
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="estabilizador" data-seccion="proteccion" data-nombre="Estabilizador 1000W">
+            <div class="icono">⚡</div>
+            <strong>Estabilizador</strong><br />1000W
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="modem" data-seccion="extra" data-nombre="Módem WiFi">
+            <div class="icono">📶</div>
+            <strong>Módem</strong><br />WiFi
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="impresora" data-seccion="extra" data-nombre="Impresora Láser">
+            <div class="icono">🖨️</div>
+            <strong>Impresora</strong><br />Láser
+          </div>
+
+          <div class="componente" draggable="true" data-tipo="webcam" data-seccion="extra" data-nombre="Webcam Full HD">
+            <div class="icono">📷</div>
+            <strong>Webcam</strong><br />Full HD
+          </div>
+        </div>
+
+        <div class="panel ayuda">
+          <h3>Objetivo didáctico</h3>
+          <ul>
+            <li>Reconocer componentes básicos de una PC.</li>
+            <li>Diferenciar componentes internos y periféricos.</li>
+            <li>Comprender que la PC necesita hardware mínimo para iniciar.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel zona-pc">
+        <h2>Armado por secciones</h2>
+
+        <div class="gabinete">
+          <div class="subzona" data-seccion="gabinete">
+            <h3>Gabinete  <span class="estado-seccion" id="estadoGabinete">Activo</span></h3>
+            <div class="zona-clasificacion" data-seccion="gabinete"></div>
+          </div>
+
+          <div class="subzona perifericos" data-seccion="perifericos">
+            <h3>Periféricos de entrada y salida <span class="estado-seccion" id="estadoPerifericos">Bloqueado</span></h3>
+            <div class="zona-clasificacion" data-seccion="perifericos"></div>
+          </div>
+
+          <div class="subzona proteccion" data-seccion="proteccion">
+            <h3>Elementos de protección <span class="estado-seccion" id="estadoProteccion">Bloqueado</span></h3>
+            <div class="zona-clasificacion" data-seccion="proteccion"></div>
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button class="encender" onclick="encenderPC()">Encender PC</button>
+          <button class="reiniciar" onclick="reiniciarJuego()">Reiniciar</button>
+        </div>
+
+        <div class="asistente-etapas" id="asistenteEtapas">
+          Asistente: completá primero el Gabinete para desbloquear la siguiente sección.
+        </div>
+        <div class="monitor" id="monitorSalida">PC apagada...</div>
+        <div class="pc-anim" id="pcAnim">
+          <div>
+            <div class="pc-monitor">
+              <div class="pc-screen"></div>
+            </div>
+            <div class="pc-base"></div>
+          </div>
+          <div class="pc-cpu">
+            <div class="pc-led"></div>
+          </div>
+        </div>
+        <div class="resultado" id="resultado"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let nombre = "";
+    let inicioTiempo = null;
+    let intervalo = null;
+    let intentos = 0;
+    let errores = 0;
+
+    const piezasColocadas = {};
+
+    const componentes = document.querySelectorAll(".componente");
+    const zonasClasificacion = document.querySelectorAll(".zona-clasificacion");
+    const mapaSecciones = {
+      gabinete: ["mother", "cpu", "ram", "disco", "fuente"],
+      perifericos: ["monitor", "teclado", "mouse"],
+      proteccion: ["proteccion"]
+    };
+
+    componentes.forEach(componente => {
+      componente.addEventListener("dragstart", event => {
+        if (componente.classList.contains("colocado")) {
+          event.preventDefault();
+          return;
+        }
+        event.dataTransfer.setData("tipo", componente.dataset.tipo);
+        event.dataTransfer.setData("nombre", componente.dataset.nombre);
+        event.dataTransfer.setData("seccion", componente.dataset.seccion);
+      });
+    });
+
+    zonasClasificacion.forEach(zona => {
+      zona.addEventListener("dragover", event => {
+        event.preventDefault();
+      });
+
+      zona.addEventListener("drop", event => {
+        event.preventDefault();
+
+        const tipo = event.dataTransfer.getData("tipo");
+        const nombre = event.dataTransfer.getData("nombre");
+        const seccionOrigen = event.dataTransfer.getData("seccion");
+        const seccionDestino = zona.dataset.seccion;
+        const claveRegistro = seccionDestino === "proteccion" ? "proteccion" : tipo;
+        const subzona = zona.closest(".subzona");
+
+        if (subzona && subzona.classList.contains("bloqueada")) {
+          errores++;
+          document.getElementById("errores").textContent = errores;
+          mostrarResultado("error", "Esa sección está bloqueada. Completá primero la etapa anterior.");
+          return;
+        }
+
+        if (piezasColocadas[claveRegistro] || piezasColocadas[tipo]) {
+          mostrarResultado("error", "Ese componente ya fue clasificado.");
+          return;
+        }
+
+        if (seccionOrigen === seccionDestino) {
+          piezasColocadas[claveRegistro] = nombre;
+          zona.classList.remove("incorrecto");
+          zona.classList.add("correcto");
+
+          const badge = document.createElement("div");
+          badge.className = "pieza-colocada";
+          badge.textContent = nombre;
+          zona.appendChild(badge);
+
+          const componenteOriginal = document.querySelector(`.componente[data-tipo="${tipo}"]`);
+          if (componenteOriginal) {
+            componenteOriginal.classList.add("colocado");
+            componenteOriginal.draggable = false;
+          }
+
+          actualizarEstadoSecciones();
+        } else {
+          errores++;
+          document.getElementById("errores").textContent = errores;
+          zona.classList.remove("correcto");
+          zona.classList.add("incorrecto");
+          mostrarResultado("error", "Ese componente pertenece a otra sección.");
+        }
+      });
+    });
+
+    function iniciarJuego() {
+      const inputNombre = document.getElementById("nombreJugador");
+      nombre = inputNombre.value.trim();
+
+      if (nombre === "") {
+        alert("Ingresá el nombre del alumno para comenzar.");
+        return;
+      }
+
+      document.getElementById("jugadorActual").textContent = nombre;
+      document.getElementById("pantallaInicio").style.display = "none";
+      document.getElementById("infoJuego").style.display = "flex";
+      document.getElementById("zonaJuego").style.display = "grid";
+
+      inicioTiempo = new Date();
+      intervalo = setInterval(actualizarTiempo, 1000);
+      actualizarEstadoSecciones();
+    }
+
+    function actualizarTiempo() {
+      const ahora = new Date();
+      const segundosTotales = Math.floor((ahora - inicioTiempo) / 1000);
+      const minutos = Math.floor(segundosTotales / 60).toString().padStart(2, "0");
+      const segundos = (segundosTotales % 60).toString().padStart(2, "0");
+      document.getElementById("tiempo").textContent = `${minutos}:${segundos}`;
+    }
+
+    function encenderPC() {
+      const monitor = document.getElementById("monitorSalida");
+      const botonEncender = document.querySelector(".encender");
+      const pcAnim = document.getElementById("pcAnim");
+      intentos++;
+      document.getElementById("intentos").textContent = intentos;
+      botonEncender.disabled = true;
+      monitor.classList.remove("ok", "error");
+      monitor.classList.add("encendiendo");
+      pcAnim.classList.remove("encendida", "apagada");
+      monitor.textContent = "Iniciando secuencia de encendido...\nVerificando hardware";
+
+      const requeridos = ["mother", "cpu", "ram", "disco", "fuente", "monitor", "teclado", "mouse", "proteccion"];
+      const faltantes = requeridos.filter(item => !piezasColocadas[item]);
+
+      setTimeout(() => {
+        monitor.textContent = "Iniciando secuencia de encendido...\nVerificando hardware.";
+      }, 350);
+
+      setTimeout(() => {
+        monitor.textContent = "Iniciando secuencia de encendido...\nVerificando hardware..";
+      }, 700);
+
+      setTimeout(() => {
+        monitor.textContent = "Iniciando secuencia de encendido...\nVerificando hardware...";
+      }, 1050);
+
+      setTimeout(() => {
+        monitor.classList.remove("encendiendo");
+        botonEncender.disabled = false;
+
+        if (faltantes.length > 0) {
+          monitor.classList.add("error");
+          pcAnim.classList.add("apagada");
+          monitor.textContent = "ERROR DE ENCENDIDO...\nFaltan componentes necesarios para iniciar.";
+          mostrarResultado("error", `La PC no encendió. Faltan: ${faltantes.map(obtenerNombreSlot).join(", ")}.`);
+          return;
+        }
+
+        clearInterval(intervalo);
+        actualizarTiempo();
+
+        const tiempoFinal = document.getElementById("tiempo").textContent;
+
+        monitor.classList.add("ok");
+        pcAnim.classList.add("encendida");
+        monitor.textContent =
+          "BIOS detectada...\n" +
+          "CPU: OK\n" +
+          "RAM: OK\n" +
+          "DISCO: OK\n" +
+          "PROTECCIÓN ELÉCTRICA: OK\n" +
+          "PERIFÉRICOS: OK\n" +
+          "Sistema iniciado correctamente.";
+
+        mostrarResultado(
+          "ok",
+          `¡Felicitaciones, ${nombre}! La PC encendió correctamente. Tiempo de resolución: ${tiempoFinal}. Intentos: ${intentos}. Errores: ${errores}.`
+        );
+      }, 1450);
+    }
+
+    function mostrarResultado(tipo, mensaje) {
+      const resultado = document.getElementById("resultado");
+      resultado.className = `resultado ${tipo}`;
+      resultado.textContent = mensaje;
+    }
+
+    function seccionCompleta(claveSeccion) {
+      return mapaSecciones[claveSeccion].every(item => Boolean(piezasColocadas[item]));
+    }
+
+    function actualizarEstadoSecciones() {
+      const subzonaGabinete = document.querySelector('.subzona[data-seccion="gabinete"]');
+      const subzonaPerifericos = document.querySelector('.subzona[data-seccion="perifericos"]');
+      const subzonaProteccion = document.querySelector('.subzona[data-seccion="proteccion"]');
+      const estadoGabinete = document.getElementById("estadoGabinete");
+      const estadoPerifericos = document.getElementById("estadoPerifericos");
+      const estadoProteccion = document.getElementById("estadoProteccion");
+      const asistente = document.getElementById("asistenteEtapas");
+
+      const gabineteCompleto = seccionCompleta("gabinete");
+      const perifericosCompletos = seccionCompleta("perifericos");
+      const proteccionCompleta = seccionCompleta("proteccion");
+
+      subzonaGabinete.classList.remove("bloqueada");
+      estadoGabinete.textContent = gabineteCompleto ? "Completo" : "Activo";
+
+      if (gabineteCompleto) {
+        subzonaPerifericos.classList.remove("bloqueada");
+        estadoPerifericos.textContent = perifericosCompletos ? "Completo" : "Activo";
+      } else {
+        subzonaPerifericos.classList.add("bloqueada");
+        estadoPerifericos.textContent = "Bloqueado";
+      }
+
+      if (perifericosCompletos) {
+        subzonaProteccion.classList.remove("bloqueada");
+        estadoProteccion.textContent = proteccionCompleta ? "Completo" : "Activo";
+      } else {
+        subzonaProteccion.classList.add("bloqueada");
+        estadoProteccion.textContent = "Bloqueado";
+      }
+
+      if (!gabineteCompleto) {
+        asistente.textContent = "Asistente: completá primero el Gabinete para desbloquear Periféricos.";
+      } else if (!perifericosCompletos) {
+        asistente.textContent = "Asistente: bien. Ahora completá Periféricos para habilitar Protección.";
+      } else if (!proteccionCompleta) {
+        asistente.textContent = "Asistente: excelente. En Protección podés elegir UPS o Estabilizador.";
+      } else {
+        asistente.textContent = "Asistente: secciones completas. Ya podés encender la PC.";
+      }
+    }
+
+    function obtenerNombreSlot(tipo) {
+      const nombres = {
+        mother: "Placa madre",
+        cpu: "Procesador / CPU",
+        ram: "Memoria RAM",
+        disco: "Disco de almacenamiento",
+        fuente: "Fuente de alimentación",
+        monitor: "Monitor",
+        teclado: "Teclado",
+        mouse: "Mouse",
+        ups: "UPS",
+        estabilizador: "Estabilizador"
+      };
+      return nombres[tipo] || tipo;
+    }
+
+    function reiniciarJuego() {
+      location.reload();
+    }
+  </script>
+</body>
+</html>
